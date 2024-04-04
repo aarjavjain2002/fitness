@@ -6,19 +6,29 @@ import math
 
 class poseDetector():
 
-    def __init__(self, mode=False, upBody=False, smooth=True,
-                 detectionCon=0.5, trackCon=0.5):
-
+    def __init__(self, mode=False, model_complexity=1, smooth_landmarks=True,
+                 min_detection_confidence=0.5, min_tracking_confidence=0.5):
+        """
+        Initializes the pose detector.
+        :param mode: Whether to treat the input images as a batch of static and possibly unrelated images, or a stream of images where each image is related to the previous one. Default is False.
+        :param model_complexity: Complexity of the pose landmark model: 0, 1 or 2. Higher numbers improve accuracy but reduce speed. Default is 1.
+        :param smooth_landmarks: Whether to filter landmarks across different input images to reduce jitter. Default is True.
+        :param min_detection_confidence: Minimum confidence value ([0.0, 1.0]) for the detection to be considered successful. Default is 0.5.
+        :param min_tracking_confidence: Minimum confidence value ([0.0, 1.0]) for the landmark-tracking to be considered successful. Default is 0.5.
+        """
         self.mode = mode
-        self.upBody = upBody
-        self.smooth = smooth
-        self.detectionCon = detectionCon
-        self.trackCon = trackCon
+        self.model_complexity = model_complexity
+        self.smooth_landmarks = smooth_landmarks
+        self.min_detection_confidence = min_detection_confidence
+        self.min_tracking_confidence = min_tracking_confidence
 
         self.mpDraw = mp.solutions.drawing_utils
         self.mpPose = mp.solutions.pose
-        self.pose = self.mpPose.Pose(self.mode, self.upBody, self.smooth,
-                                     self.detectionCon, self.trackCon)
+        # Update to the new Pose constructor call
+        self.pose = self.mpPose.Pose(static_image_mode=mode, model_complexity=model_complexity, 
+                                     smooth_landmarks=smooth_landmarks, min_detection_confidence=min_detection_confidence, 
+                                     min_tracking_confidence=min_tracking_confidence)
+
 
     def findPose(self, img, draw=True):
         imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -30,31 +40,34 @@ class poseDetector():
         return img
 
     def findPosition(self, img, draw=True):
+        #- Declaring lmList as an object property to use it internally in the class (specifically, the findAngle method)
         self.lmList = []
         if self.results.pose_landmarks:
             for id, lm in enumerate(self.results.pose_landmarks.landmark):
                 h, w, c = img.shape
                 # print(id, lm)
+
+                #- Calculating the pixel value of the landmark
+                #- by multiplying the normalized coordinates with the height and width of the image
                 cx, cy = int(lm.x * w), int(lm.y * h)
                 self.lmList.append([id, cx, cy])
                 if draw:
                     cv2.circle(img, (cx, cy), 5, (255, 0, 0), cv2.FILLED)
+        #- Returns the the index and the coordinates of each landmark
         return self.lmList
 
     def findAngle(self, img, p1, p2, p3, draw=True):
 
-        # Get the landmarks
+        #-  Get the landmark coordinates
         x1, y1 = self.lmList[p1][1:]
         x2, y2 = self.lmList[p2][1:]
         x3, y3 = self.lmList[p3][1:]
 
-        # Calculate the Angle
+        #- Calculate the Angle
         angle = math.degrees(math.atan2(y3 - y2, x3 - x2) -
                              math.atan2(y1 - y2, x1 - x2))
         if angle < 0:
             angle += 360
-
-        # print(angle)
 
         # Draw
         if draw:
@@ -66,13 +79,13 @@ class poseDetector():
             cv2.circle(img, (x2, y2), 15, (0, 0, 255), 2)
             cv2.circle(img, (x3, y3), 10, (0, 0, 255), cv2.FILLED)
             cv2.circle(img, (x3, y3), 15, (0, 0, 255), 2)
-            cv2.putText(img, str(int(angle)), (x2 - 50, y2 + 50),
-                        cv2.FONT_HERSHEY_PLAIN, 2, (0, 0, 255), 2)
+            cv2.putText(img, str(int(angle)), (10, 50),
+                        cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 2)
         return angle
 
 
 def main():
-    cap = cv2.VideoCapture(0) #TODO Changed this value from original
+    cap = cv2.VideoCapture('PoseVideos/1.mp4')
     pTime = 0
     detector = poseDetector()
     while True:
