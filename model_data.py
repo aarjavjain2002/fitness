@@ -2,6 +2,7 @@
 
 import pandas as pd
 import random
+NOISE = 2.5
 
 
 def generate_test_bicep_curl_model():
@@ -19,11 +20,11 @@ def generate_test_bicep_curl_model():
 def generate_test_bicep_curl_user():
     temp = []
     for i in range(50):
-        noise = random.uniform(-1.5, 1.5)
+        noise = random.uniform(-NOISE, NOISE)
         temp.append(150 - 1.4*i + noise)
-    temp.append(80 + random.uniform(-1.5, 1.5))
+    temp.append(80 + random.uniform(-NOISE, NOISE))
     for i in range(50):
-        noise = random.uniform(-1.5, 1.5)
+        noise = random.uniform(-NOISE, NOISE)
         temp.append(80 + 1.4*i + noise)
 
     tricep = [60 for i in range(101)]
@@ -33,14 +34,10 @@ def generate_test_bicep_curl_user():
     bicep_curl.to_csv("data/bicep_curl_user.csv")
 
 
-def get_accuracy():
-    """Retrieve the accuracy by comparing the user angles with the model angles."""
-
-
-
 def main():
-    # generate_test_bicep_curl_model()
-    # generate_test_bicep_curl_user()
+    
+    generate_test_bicep_curl_model()
+    generate_test_bicep_curl_user()
 
 if __name__ == "__main__":
     main()
