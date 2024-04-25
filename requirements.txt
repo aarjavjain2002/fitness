@@ -7,5 +7,6 @@ pytest
 
 opencv-python
 numpy
+pandas
 
 mediapipe==0.10.9
