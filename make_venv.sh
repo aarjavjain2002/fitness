@@ -14,6 +14,4 @@ pip install --upgrade pip  # Always use 'pip' after activating the venv
 pip install wheel  # Install wheel to ensure smooth installations of other packages
 
 pip install -r requirements.txt  # Install required packages from requirements.txt
-python3.11 --version  # Check the Python version
-
-# To make the Virtual Environment
+$ENVNAME/bin/python3 --version  # Check the Python version explicitly using the virtual environment's binary
