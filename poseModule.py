@@ -48,7 +48,7 @@ class poseDetector():
         self.lmList = []
         if self.results.pose_landmarks:
             for id, lm in enumerate(self.results.pose_landmarks.landmark):
-                h, w = img.shape
+                h, w, _ = img.shape
                 print(f"in find position. {img.shape}")
                 print(f"in find position. id: {id}, lm: {lm}")
 
