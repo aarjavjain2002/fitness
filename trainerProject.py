@@ -4,6 +4,7 @@ import time
 import poseModule as pm
 import pandas as pd
 import os
+from accuracy import get_accuracy
 
 cap = cv2.VideoCapture(1)   
 
@@ -19,11 +20,11 @@ csv_filename = "bicepCurl.csv"
 csv_file_path = os.path.join(folder_path, csv_filename)
 
 #- Read the CSV file into a DataFrame
-df = pd.read_csv(csv_file_path)
+train = pd.read_csv(csv_file_path)
 
 #- Calculate the min and max angles from the df
-startAngle = df['1'].min()
-endAngle = df['1'].max()
+startAngle = 190
+endAngle = train['1'].max()
 
 #- Pandas dataframe here to store the angle after every frame (every 1ms) here
 angles_df = pd.DataFrame(columns=['1'])
@@ -52,8 +53,10 @@ while True:
         #- Left arm
         angle = detector.findAngle(img, 11, 13, 15)
 
-        #- Add the angle to the DataFrame
-        angles_df = pd.concat([angles_df, pd.DataFrame([angle], columns=['1'])], ignore_index=True)
+
+        if angle >= startAngle:
+            #- Add the angle to the DataFrame
+            angles_df = pd.concat([angles_df, pd.DataFrame([angle], columns=['1'])], ignore_index=True)
 
         #- Percentage (going between 220 and 300 for now)
         percentage = np.interp(angle, (startAngle, endAngle), (0, 100))
@@ -93,10 +96,12 @@ while True:
     cv2.imshow("Image", img)
     cv2.waitKey(1)
 
-print(angles_df)
-
 stepSize = len(angles_df) / 100
 
 indices = [round(stepSize * i) for i in range(100)]
 
 selected_rows = angles_df.iloc[indices]
+
+pd.DataFrame({"Train" : list(train["1"]), "Actual" : list(selected_rows["1"])}).to_csv("comparison.csv")
+
+print(get_accuracy(selected_rows, train))
