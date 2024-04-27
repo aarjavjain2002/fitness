@@ -49,8 +49,6 @@ class poseDetector():
         if self.results.pose_landmarks:
             for id, lm in enumerate(self.results.pose_landmarks.landmark):
                 h, w, _ = img.shape
-                print(f"in find position. {img.shape}")
-                print(f"in find position. id: {id}, lm: {lm}")
 
                 #- Calculating the pixel value of the landmark
                 #- by multiplying the normalized coordinates with the height and width of the image
