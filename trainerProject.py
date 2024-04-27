@@ -2,6 +2,8 @@ import cv2
 import numpy as np
 import time
 import poseModule as pm
+import pandas as pd
+import os
 
 cap = cv2.VideoCapture(1)   
 
@@ -10,9 +12,27 @@ detector = pm.poseDetector()
 reps = 0
 direction = 0 #- 0 means up, 1 means down -> full rep
 
+#- Getting the start and end angles from CSV
+# Define the path to the CSV file
+folder_path = "trainingData"
+csv_filename = "bicepCurl.csv"
+csv_file_path = os.path.join(folder_path, csv_filename)
+
+#- Read the CSV file into a DataFrame
+df = pd.read_csv(csv_file_path)
+
+#- Calculate the min and max angles from the df
+startAngle = df['1'].min()
+endAngle = df['1'].max()
+
+#- Pandas dataframe here to store the angle after every frame (every 1ms) here
+angles_df = pd.DataFrame(columns=['1'])
+
 while True:
     # #- Reading the image
     success, img = cap.read()
+
+    startTime = time.time()
 
     # #- Resizing the image
     img = cv2.resize(img, (1280, 720))
@@ -32,11 +52,14 @@ while True:
         #- Left arm
         angle = detector.findAngle(img, 11, 13, 15)
 
+        #- Add the angle to the DataFrame
+        angles_df = pd.concat([angles_df, pd.DataFrame([angle], columns=['1'])], ignore_index=True)
+
         #- Percentage (going between 220 and 300 for now)
-        percentage = np.interp(angle, (220, 300), (0, 100))
+        percentage = np.interp(angle, (startAngle, endAngle), (0, 100))
 
         #- Rectangle bar
-        bar = np.interp(angle, (220, 300), (650, 100))
+        bar = np.interp(angle, (startAngle, endAngle), (650, 100))
 
         #- Counting reps
         color = (255, 0, 255)
@@ -59,7 +82,21 @@ while True:
         #- Reps display
         cv2.putText(img, "Reps: " + str(int(reps)), (30, 670), cv2.FONT_HERSHEY_DUPLEX, 3, (255, 0, 0), 5, cv2.LINE_AA)
 
+        if reps >= 1:
+            break;
+    
+    endTime = time.time()
+
+    print(endTime - startTime)
+
     #- Displaying the image
     cv2.imshow("Image", img)
     cv2.waitKey(1)
 
+print(angles_df)
+
+stepSize = len(angles_df) / 100
+
+indices = [round(stepSize * i) for i in range(100)]
+
+selected_rows = angles_df.iloc[indices]
