@@ -6,6 +6,8 @@ import pandas as pd
 import os
 from accuracy import get_accuracy
 
+REP_SPEED = 0.25 # How fast of a rep we allow. Lower means faster reps allowed. Higher means slower reps allowed.
+
 cap = cv2.VideoCapture(1)   
 
 detector = pm.poseDetector()
@@ -33,6 +35,9 @@ angles_df = pd.DataFrame(columns=['1'])
 accuracy = 0
 avg_accuracy = 0
 accuracy_list = []
+
+# Slow down flag
+slow_flag = False
 
 while True:
     # #- Reading the image
@@ -79,22 +84,26 @@ while True:
                 reps += 0.5
                 direction = 0
 
-                angles_df_length = len(angles_df)
+                angles_df_length, _ = angles_df.shape
+                step_size = angles_df_length / 100
 
-                if angles_df_length < 100:
+                if step_size < REP_SPEED:
                     reps -= 1
                     angles_df = pd.DataFrame(columns=['1'])
+                    slow_flag = True
                     continue
 
                 #- Showing the accuracy on screen
-                stepSize = angles_df_length / 100
-                indices = [round(stepSize * i) for i in range(100)]
+                indices = [round(step_size * i) if round(step_size * i) < angles_df_length else angles_df_length - 1 for i in range(100)]
                 selected_rows = angles_df.iloc[indices]
                 accuracy = get_accuracy(selected_rows, train)
 
                 # Compute Average Accuracy of all reps
-                # accuracy_list.append(accuracy)
-                # avg_accuracy = np.mean(accuracy_list)
+                accuracy_list.append(accuracy)
+                avg_accuracy = np.mean(accuracy_list)
+                slow_flag = False
+
+                print(step_size)
 
                 # Reset the angles dataframe
                 angles_df = pd.DataFrame(columns=['1'])
@@ -102,6 +111,9 @@ while True:
         #- Accuracy on display
         accuracy_text = f'Accuracy: {accuracy:.2f}%'
         avg_acc_text = f'Average Accuracy: {avg_accuracy:.2f}%'
+
+        if slow_flag:
+            cv2.putText(img, "GO SLOWER!", (100, 100), cv2.FONT_HERSHEY_DUPLEX, 3, (255, 0, 0), 5, cv2.LINE_AA)
 
         # Calculate text width and height to align at the bottom right
         (text_width, text_height), baseline = cv2.getTextSize(accuracy_text, cv2.FONT_HERSHEY_DUPLEX, 1, 2)
