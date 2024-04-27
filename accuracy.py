@@ -1,7 +1,7 @@
 """Calculate the accuracy of a rep."""
 import pandas as pd
 import math
-DECAY_RATE = 0.03193 # (-math.log(60/100)) / 16
+DECAY_RATE = 0.002854488 # (-math.log(60/100)) / 16
 
 # We assume a residual of 16 corresponds to a 60% accuracy
 
@@ -14,6 +14,7 @@ def get_accuracy(userdf: pd.DataFrame, modeldf: pd.DataFrame) -> float:
         for i in range(num_rows):
             res += ((userdf.iloc[i, j] - modeldf.iloc[i, j])**2)
     res = res*(1/(2*num_rows))
+    print(res)
     return exp_decay(res)
 
 def exp_decay(res: float) -> float:
