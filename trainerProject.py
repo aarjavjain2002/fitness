@@ -6,7 +6,7 @@ import pandas as pd
 import os
 from accuracy import get_accuracy
 
-cap = cv2.VideoCapture(0)   
+cap = cv2.VideoCapture(1)   
 
 detector = pm.poseDetector()
 
@@ -31,17 +31,16 @@ angles_df = pd.DataFrame(columns=['1'])
 
 #- Default accuracy value
 accuracy = 0
+avg_accuracy = 0
+accuracy_list = []
 
 while True:
     # #- Reading the image
     success, img = cap.read()
-
     startTime = time.time()
 
     # #- Resizing the image
     img = cv2.resize(img, (1280, 720))
-
-    # img = cv2.imread("assets/test.jpg")
 
     #- Test image
     img = detector.findPose(img, draw = False) #- The false is to remove the other lines and only focus on the landmarks we want
@@ -55,7 +54,6 @@ while True:
 
         #- Left arm
         angle = detector.findAngle(img, 11, 13, 15)
-
 
         if angle >= startAngle:
             #- Add the angle to the DataFrame
@@ -74,22 +72,36 @@ while True:
             if direction == 0:
                 reps += 0.5
                 direction = 1
+
         if percentage == 0:
             color = (0, 255, 0)
             if direction == 1:
                 reps += 0.5
                 direction = 0
 
+                angles_df_length = len(angles_df)
+
+                if angles_df_length < 100:
+                    reps -= 1
+                    angles_df = pd.DataFrame(columns=['1'])
+                    continue
+
                 #- Showing the accuracy on screen
-                stepSize = len(angles_df) / 100
+                stepSize = angles_df_length / 100
                 indices = [round(stepSize * i) for i in range(100)]
                 selected_rows = angles_df.iloc[indices]
                 accuracy = get_accuracy(selected_rows, train)
 
+                # Compute Average Accuracy of all reps
+                # accuracy_list.append(accuracy)
+                # avg_accuracy = np.mean(accuracy_list)
+
+                # Reset the angles dataframe
                 angles_df = pd.DataFrame(columns=['1'])
 
         #- Accuracy on display
         accuracy_text = f'Accuracy: {accuracy:.2f}%'
+        avg_acc_text = f'Average Accuracy: {avg_accuracy:.2f}%'
 
         # Calculate text width and height to align at the bottom right
         (text_width, text_height), baseline = cv2.getTextSize(accuracy_text, cv2.FONT_HERSHEY_DUPLEX, 1, 2)
@@ -100,6 +112,7 @@ while True:
 
         # Place the text on the image
         cv2.putText(img, accuracy_text, (text_x, text_y), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(img, avg_acc_text, (text_x - 142, text_y - 30), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
 
         #- Rectangle display
