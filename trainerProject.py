@@ -6,7 +6,7 @@ import pandas as pd
 import os
 from accuracy import get_accuracy
 
-cap = cv2.VideoCapture(1)   
+cap = cv2.VideoCapture(0)   
 
 detector = pm.poseDetector()
 
@@ -23,7 +23,7 @@ csv_file_path = os.path.join(folder_path, csv_filename)
 train = pd.read_csv(csv_file_path)
 
 #- Calculate the min and max angles from the df
-startAngle = 190
+startAngle = train['1'].min()
 endAngle = train['1'].max()
 
 #- Pandas dataframe here to store the angle after every frame (every 1ms) here
