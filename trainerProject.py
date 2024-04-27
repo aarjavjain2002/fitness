@@ -1,75 +1,65 @@
-# import cv2
-# import numpy as np
-# import time
-# import poseModule as pm
-# import pandas as pd
-# import os
+import cv2
+import numpy as np
+import time
+import poseModule as pm
 
-# # Initialize the pose detector
-# detector = pm.poseDetector()
+cap = cv2.VideoCapture(1)   
 
-# # Start capturing video
-# cap = cv2.VideoCapture('assets/bicepCurl.mov')
+detector = pm.poseDetector()
 
-# # Get the total number of frames in the video
-# total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+reps = 0
+direction = 0 #- 0 means up, 1 means down -> full rep
 
-# # Calculate the interval at which to capture frames
-# interval = total_frames // 100
+while True:
+    # #- Reading the image
+    success, img = cap.read()
 
-# #- Pandas Train values
-# df = pd.DataFrame(columns=["1"], index=range(100))
+    # #- Resizing the image
+    img = cv2.resize(img, (1280, 720))
 
-# # Initialize a counter for the number of captured angles
-# captured_angles = 0
+    # img = cv2.imread("assets/test.jpg")
 
-# # Counter for the current frame
-# current_frame = 0
+    #- Test image
+    img = detector.findPose(img, draw = False) #- The false is to remove the other lines and only focus on the landmarks we want
 
-# while True:
-#     success, img = cap.read()
+    #- Getting the landmarks
+    lmList = detector.findPosition(img, draw = False)
+    
+    if len(lmList) != 0:
+        # #- Right arm
+        # detector.findAngle(img, 12, 14, 16)
 
-#     # Break the loop if the video ends or capturing fails
-#     if not success:
-#         break
+        #- Left arm
+        angle = detector.findAngle(img, 11, 13, 15)
 
-#     # Resize the image
-#     img = cv2.resize(img, (140, 318))
+        #- Percentage (going between 220 and 300 for now)
+        percentage = np.interp(angle, (220, 300), (0, 100))
 
-#     # Process the image and find the pose
-#     img = detector.findPose(img, draw=False)
-#     lmList = detector.findPosition(img, draw=False)
+        #- Rectangle bar
+        bar = np.interp(angle, (220, 300), (650, 100))
 
-#     # Only capture the angle at the specified intervals
-#     if current_frame % interval == 0 and len(lmList) != 0:
-#         # Left arm angle
-#         angle = detector.findAngle(img, 11, 13, 15)
-#         df.loc[captured_angles, "1"] = angle
-#         captured_angles += 1
+        #- Counting reps
+        color = (255, 0, 255)
+        if percentage == 100:
+            color = (0, 255, 0)
+            if direction == 0:
+                reps += 0.5
+                direction = 1
+        if percentage == 0:
+            color = (0, 255, 0)
+            if direction == 1:
+                reps += 0.5
+                direction = 0
+        
+        #- Rectangle display
+        cv2.rectangle(img, (1100, 100), (1175, 650), color, 3)
+        cv2.rectangle(img, (1100, int(bar)), (1175, 650), color, cv2.FILLED)
+        cv2.putText(img, f'{int(percentage)} %', (1100, 75), cv2.FONT_HERSHEY_DUPLEX, 3, (255, 0, 0), 5, cv2.LINE_AA)
 
-#         # Break if we have captured 100 angles
-#         if captured_angles >= 100:
-#             break
+        #- Reps display
+        cv2.putText(img, "Reps: " + str(int(reps)), (30, 670), cv2.FONT_HERSHEY_DUPLEX, 3, (255, 0, 0), 5, cv2.LINE_AA)
 
-#     current_frame += 1
+    #- Displaying the image
+    cv2.imshow("Image", img)
+    cv2.waitKey(1)
 
-#     # Display the image
-#     cv2.imshow("Image", img)
-#     if cv2.waitKey(1) & 0xFF == ord('q'):
-#         break
-
-# #- Release the video capture object and close all windows
-# cap.release()
-# cv2.destroyAllWindows()
-
-# #- Define the path for the new directory
-# folder_path = "trainingData"
-# csv_filename = "angle_data.csv"
-# csv_file_path = os.path.join(folder_path, csv_filename)
-
-# #- Saving the DataFrame to a CSV file in the specified directory
-# df.to_csv(csv_file_path, index=False)
-# print(f"Saved angle data to {csv_file_path}")
-
-# #- At this point, 'df' datagrame contains 100 angles captured at equal intervals
-# print(df)  # To verify the result
