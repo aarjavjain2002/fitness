@@ -44,8 +44,9 @@ while True:
     if current_frame % interval == 0 and len(lmList) != 0:
         # Left arm angle
         angle = detector.findAngle(img, 11, 13, 15)
-        df.loc[captured_angles, "1"] = angle
-        captured_angles += 1
+        if angle >= 185:
+            df.loc[captured_angles, "1"] = angle
+            captured_angles += 1
 
         # Break if we have captured 100 angles
         if captured_angles >= 100:
