@@ -10,3 +10,5 @@ numpy
 pandas
 
 mediapipe==0.10.9
+
+pandas==2.2.2
