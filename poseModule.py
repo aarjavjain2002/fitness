@@ -2,6 +2,8 @@ import cv2
 import mediapipe as mp
 import time
 import math
+import pandas as pd
+import numpy as np
 
 
 class poseDetector():
@@ -21,6 +23,8 @@ class poseDetector():
         self.smooth_landmarks = smooth_landmarks
         self.min_detection_confidence = min_detection_confidence
         self.min_tracking_confidence = min_tracking_confidence
+        self.reps_count = 0
+        self.reps = [pd.DataFrame()]
 
         self.mpDraw = mp.solutions.drawing_utils
         self.mpPose = mp.solutions.pose
@@ -44,13 +48,12 @@ class poseDetector():
         self.lmList = []
         if self.results.pose_landmarks:
             for id, lm in enumerate(self.results.pose_landmarks.landmark):
-                h, w, c = img.shape
-                # print(id, lm)
+                h, w, _ = img.shape
 
                 #- Calculating the pixel value of the landmark
                 #- by multiplying the normalized coordinates with the height and width of the image
                 cx, cy = int(lm.x * w), int(lm.y * h)
-                self.lmList.append([id, cx, cy])
+                self.lmList.append([id, cx, cy, lm.z])
                 if draw:
                     cv2.circle(img, (cx, cy), 5, (255, 0, 0), cv2.FILLED)
         #- Returns the the index and the coordinates of each landmark
@@ -59,9 +62,9 @@ class poseDetector():
     def findAngle(self, img, p1, p2, p3, draw=True):
 
         #-  Get the landmark coordinates
-        x1, y1 = self.lmList[p1][1:]
-        x2, y2 = self.lmList[p2][1:]
-        x3, y3 = self.lmList[p3][1:]
+        x1, y1 = self.lmList[p1][1:3]
+        x2, y2 = self.lmList[p2][1:3]
+        x3, y3 = self.lmList[p3][1:3]
 
         #- Calculate the Angle
         angle = math.degrees(math.atan2(y3 - y2, x3 - x2) -
@@ -83,11 +86,21 @@ class poseDetector():
                         cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 2)
         return angle
 
+    def append_storage(self,c_time,img):
+        c_df = self.reps[self.reps_count]
+        for id,lm in enumerate(self.results.pose_landmarks.landmark):
+            h,w = img.shape
+            # not sure how to find the z-coordinate of the lm so this is a placeholder
+            c_df.add(np.array([c_time,int(lm.x *w),int(lm.y * h), lm.z]))
+
+
+
 
 def main():
     cap = cv2.VideoCapture('PoseVideos/1.mp4')
     pTime = 0
     detector = poseDetector()
+    start_time = time.time()
     while True:
         success, img = cap.read()
         img = detector.findPose(img)
@@ -97,9 +110,10 @@ def main():
             cv2.circle(img, (lmList[14][1], lmList[14][2]), 15, (0, 0, 255), cv2.FILLED)
 
         cTime = time.time()
+        c_time = cTime - start_time
         fps = 1 / (cTime - pTime)
         pTime = cTime
-
+ 
         cv2.putText(img, str(int(fps)), (70, 50), cv2.FONT_HERSHEY_PLAIN, 3,
                     (255, 0, 0), 3)
 
