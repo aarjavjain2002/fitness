@@ -36,6 +36,13 @@ accuracy = 0
 avg_accuracy = 0
 accuracy_list = []
 
+
+#- Default rep value
+step_size = 0
+step_accuracy = 0
+rep_list = []
+
+
 # Slow down flag
 slow_flag = False
 
@@ -105,6 +112,10 @@ while True:
 
                 print(step_size)
 
+                # Compute Average Rep Accuracy of all reps
+                rep_list.append(step_size)
+                step_accuracy = np.mean(rep_list)
+
                 # Reset the angles dataframe
                 angles_df = pd.DataFrame(columns=['1'])
 
@@ -112,8 +123,12 @@ while True:
         accuracy_text = f'Accuracy: {accuracy:.2f}%'
         avg_acc_text = f'Average Accuracy: {avg_accuracy:.2f}%'
 
+        #- Rep Accuracy on display
+        repspeed_text = f'Rep Speed: {step_size:.2f} ms'
+        avg_rep_text = f'Average Rep Speed: {step_accuracy:.2f} ms'
+
         if slow_flag:
-            cv2.putText(img, "GO SLOWER!", (100, 100), cv2.FONT_HERSHEY_DUPLEX, 3, (255, 0, 0), 5, cv2.LINE_AA)
+            cv2.putText(img, "GO SLOWER!", (450, 150), cv2.FONT_HERSHEY_DUPLEX, 3, (255, 0, 0), 5, cv2.LINE_AA)
 
         # Calculate text width and height to align at the bottom right
         (text_width, text_height), baseline = cv2.getTextSize(accuracy_text, cv2.FONT_HERSHEY_DUPLEX, 1, 2)
@@ -123,8 +138,10 @@ while True:
         text_y = 720 - baseline - 10    # 10 pixels from the bottom border
 
         # Place the text on the image
-        cv2.putText(img, accuracy_text, (text_x, text_y), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
-        cv2.putText(img, avg_acc_text, (text_x - 142, text_y - 30), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(img, accuracy_text, (text_x - 1000, text_y - 620), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(img, avg_acc_text, (text_x - 1000, text_y - 580), cv2.FONT_HERSHEY_DUPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(img, repspeed_text, (text_x - 1000, text_y - 540), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
+        cv2.putText(img, avg_rep_text, (text_x - 1000, text_y - 500), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 2, cv2.LINE_AA)
 
 
         #- Rectangle display
