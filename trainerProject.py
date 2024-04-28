@@ -114,7 +114,7 @@ while True:
 
                 # Compute Average Rep Accuracy of all reps
                 if step_size != 0:
-                    rep_speed = 1/step_size
+                    rep_speed = 5/step_size
                 rep_list.append(rep_speed)
                 rep_accuracy = np.mean(rep_list)
 
