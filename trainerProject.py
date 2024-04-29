@@ -46,6 +46,9 @@ rep_speed = 0
 # Slow down flag
 slow_flag = False
 
+# Speed up flag
+fast_flag = False
+
 while True:
     # #- Reading the image
     success, img = cap.read()
@@ -100,6 +103,12 @@ while True:
                     slow_flag = True
                     continue
 
+                if step_size > 2:
+                    reps -= 1
+                    angles_df = pd.DataFrame(columns=['1'])
+                    fast_flag = True
+                    continue
+
                 #- Showing the accuracy on screen
                 indices = [round(step_size * i) if round(step_size * i) < angles_df_length else angles_df_length - 1 for i in range(100)]
                 selected_rows = angles_df.iloc[indices]
@@ -109,6 +118,7 @@ while True:
                 accuracy_list.append(accuracy)
                 avg_accuracy = np.mean(accuracy_list)
                 slow_flag = False
+                fast_flag = False
 
                 print(step_size)
 
@@ -131,6 +141,9 @@ while True:
 
         if slow_flag:
             cv2.putText(img, "GO SLOWER!", (450, 150), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 5, cv2.LINE_AA)
+
+        if fast_flag:
+            cv2.putText(img, "GO FASTER!", (450, 150), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 5, cv2.LINE_AA)
 
         # Calculate text width and height to align at the bottom right
         (text_width, text_height), baseline = cv2.getTextSize(accuracy_text, cv2.FONT_HERSHEY_DUPLEX, 1, 2)
