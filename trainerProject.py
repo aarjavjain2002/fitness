@@ -136,8 +136,8 @@ while True:
         avg_acc_text = f'Average Accuracy: {avg_accuracy:.2f}%'
 
         #- Rep Accuracy on display
-        repspeed_text = f'Rep Speed: {rep_speed:.2f}'
-        avg_rep_text = f'Average Rep Speed: {rep_accuracy:.2f}'
+        repspeed_text = f'Rep Speed: {rep_speed:.2f}x'
+        avg_rep_text = f'Average Rep Speed: {rep_accuracy:.2f}x'
 
         if slow_flag:
             cv2.putText(img, "GO SLOWER!", (450, 150), cv2.FONT_HERSHEY_DUPLEX, 2, (255, 0, 0), 5, cv2.LINE_AA)
