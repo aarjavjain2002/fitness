@@ -12,7 +12,7 @@ This fitness tracker is a cutting-edge tool designed to improve exercise form an
 - ## Demo Video
 Watch the project video here: 
 
-https://www.youtube.com/watch?v=wXfSCF9rd6w&t=119s
+https://www.youtube.com/watch?v=wXfSCF9rd6w
 
 
 ## Authors
