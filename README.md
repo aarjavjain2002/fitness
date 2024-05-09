@@ -9,7 +9,7 @@ This fitness tracker is a cutting-edge tool designed to improve exercise form an
 - **User Feedback**: Displays accuracy and speed metrics immediately after each rep to help users improve their technique and also provides prompts to adjust their pace if a user is too slow or too fast.
 - **Quantifying workout quality**: While other systems may give feedback on user form, this program offers quantitative feedback to users so they have a better idea of how to improve their form.
 
-- ## Demo Video
+## Demo Video
 Watch the project video here: 
 
 https://www.youtube.com/watch?v=wXfSCF9rd6w
